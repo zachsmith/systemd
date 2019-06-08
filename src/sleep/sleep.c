@@ -109,8 +109,8 @@ static int write_hibernate_location_info(void) {
         if (arg_resume_offset)
                 xsprintf(offset_str, "%s", arg_resume_offset);
         else
-                xsprintf(offset_str, "%llu",
-                         fiemap->fm_extents[0].fe_physical / page_size());
+                xsprintf(offset_str, "%" PRIu64,
+                         (uint64_t) fiemap->fm_extents[0].fe_physical / page_size());
 
         r = write_string_file("/sys/power/resume_offset", offset_str, WRITE_STRING_FILE_DISABLE_BUFFER);
         if (r < 0)
