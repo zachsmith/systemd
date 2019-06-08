@@ -26,6 +26,7 @@
 #include "main-func.h"
 #include "parse-util.h"
 #include "pretty-print.h"
+#include "proc-cmdline.h"
 #include "sleep-config.h"
 #include "stdio-util.h"
 #include "string-util.h"
@@ -34,6 +35,23 @@
 #include "util.h"
 
 static char* arg_verb = NULL;
+static char *arg_resume_offset = NULL;
+
+STATIC_DESTRUCTOR_REGISTER(arg_resume_offset, freep);
+
+static int parse_proc_cmdline_item(const char *key, const char *value, void *data) {
+        if (streq(key, "resume_offset")) {
+                if (proc_cmdline_value_missing(key, value)) {
+                        log_warning("\"resume_offset\" kernel command line specified with no value; ignoring");
+                        return 0;
+                }
+
+                log_debug("\"resume_offset\" kernel command line set with %s", arg_resume_offset);
+                arg_resume_offset = strdup(value);
+        }
+
+        return 0;
+}
 
 static int write_hibernate_location_info(void) {
         _cleanup_free_ char *device = NULL, *type = NULL;
@@ -42,7 +60,6 @@ static int write_hibernate_location_info(void) {
         char device_str[DECIMAL_STR_MAX(uint64_t)];
         _cleanup_close_ int fd = -1;
         struct stat stb;
-        uint64_t offset;
         int r;
 
         r = find_hibernate_location(&device, &type, NULL, NULL);
@@ -85,8 +102,16 @@ static int write_hibernate_location_info(void) {
                 return log_debug_errno(SYNTHETIC_ERRNO(EINVAL),
                                        "No extents found in '%s'", device);
 
-        offset = fiemap->fm_extents[0].fe_physical / page_size();
-        xsprintf(offset_str, "%" PRIu64, offset);
+        r = proc_cmdline_parse(parse_proc_cmdline_item, NULL, 0);
+        if (r < 0)
+                return log_error_errno(errno, "Unable to parse kernel command: %m");
+
+        if (arg_resume_offset)
+                xsprintf(offset_str, "%s", arg_resume_offset);
+        else
+                xsprintf(offset_str, "%llu",
+                         fiemap->fm_extents[0].fe_physical / page_size());
+
         r = write_string_file("/sys/power/resume_offset", offset_str, WRITE_STRING_FILE_DISABLE_BUFFER);
         if (r < 0)
                 return log_debug_errno(r, "Failed to write offset '%s': %m", offset_str);
