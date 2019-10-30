@@ -97,7 +97,7 @@ typedef enum ItemType {
         SET_ACL = 'a',
         RECURSIVE_SET_ACL = 'A',
         SET_ATTRIBUTE = 'h',
-        RECURSIVE_SET_ATTRIBUTE = 'H',
+        RECURSIVE_SET_ATTRIBUTE = 'H', /* deprecated: use h+ */
         IGNORE_PATH = 'x',
         IGNORE_DIRECTORY_PATH = 'X',
         REMOVE_PATH = 'r',
@@ -2097,14 +2097,13 @@ static int create_item(Item *i) {
                         return r;
                 break;
 
-        case SET_ATTRIBUTE:
-                r = glob_item(i, path_set_attribute);
-                if (r < 0)
-                        return r;
-                break;
-
         case RECURSIVE_SET_ATTRIBUTE:
-                r = glob_item_recursively(i, fd_set_attribute);
+        case SET_ATTRIBUTE:
+                if ((i->type == SET_ATTRIBUTE && i->append_or_force) || i->type == RECURSIVE_SET_ATTRIBUTE)
+                        r = glob_item_recursively(i, fd_set_attribute);
+                else
+                        r = glob_item(i, path_set_attribute);
+
                 if (r < 0)
                         return r;
                 break;

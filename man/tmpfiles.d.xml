@@ -62,7 +62,7 @@ Z     /path-or-glob/to/adjust/mode/recursively mode user group -           MAC c
 t     /path-or-glob/to/set/xattrs              -    -    -     -           xattrs
 T     /path-or-glob/to/set/xattrs/recursively  -    -    -     -           xattrs
 h     /path-or-glob/to/set/attrs               -    -    -     -           file attrs
-H     /path-or-glob/to/set/attrs/recursively   -    -    -     -           file attrs
+h+    /path-or-glob/to/set/attrs/recursively   -    -    -     -           file attrs
 a     /path-or-glob/to/set/acls                -    -    -     -           POSIX ACLs
 A     /path-or-glob/to/set/acls/recursively    -    -    -     -           POSIX ACLs
 # a+, A+ append ACLs
@@ -397,8 +397,10 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
 
         <varlistentry>
           <term><varname>h</varname></term>
+          <term><varname>h+</varname></term>
           <listitem><para>Set Linux file/directory attributes. Lines of this type accept shell-style globs in
-          place of normal path names.</para>
+          place of normal path names. <varname>h+</varname> is the same as <varname>h</varname>, but operates
+          recursively.</para>
 
           <para>The format of the argument field is <varname>[+-=][aAcCdDeijPsStTu]</varname>. The prefix
           <varname>+</varname> (the default one) causes the attribute(s) to be added; <varname>-</varname>
@@ -415,12 +417,8 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
 
           <para>Please note that the Linux file attributes settable with this line type are a different
           concept from the extended attributes settable with <varname>t</varname>/<varname>T</varname>,
-          see above.</para></listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><varname>H</varname></term>
-          <listitem><para>Sames as <varname>h</varname>, but operates recursively.</para></listitem>
+          see above.</para>
+          </listitem>
         </varlistentry>
 
         <varlistentry>
