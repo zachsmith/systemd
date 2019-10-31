@@ -103,7 +103,7 @@ typedef enum ItemType {
         REMOVE_PATH = 'r',
         RECURSIVE_REMOVE_PATH = 'R',
         RELABEL_PATH = 'z',
-        RECURSIVE_RELABEL_PATH = 'Z',
+        RECURSIVE_RELABEL_PATH = 'Z', /* deprecated: use z+ */
         ADJUST_MODE = 'm', /* legacy, 'z' is identical to this */
 } ItemType;
 
@@ -2062,13 +2062,12 @@ static int create_item(Item *i) {
 
         case ADJUST_MODE:
         case RELABEL_PATH:
-                r = glob_item(i, path_set_perms);
-                if (r < 0)
-                        return r;
-                break;
-
         case RECURSIVE_RELABEL_PATH:
-                r = glob_item_recursively(i, fd_set_perms);
+                if ((i->type == RELABEL_PATH && i->append_or_force) || i->type == RECURSIVE_RELABEL_PATH)
+                        r = glob_item_recursively(i, fd_set_perms);
+                else
+                        r = glob_item(i, path_set_perms);
+
                 if (r < 0)
                         return r;
                 break;

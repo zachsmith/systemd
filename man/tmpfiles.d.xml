@@ -58,7 +58,7 @@ X     /path-or-glob/to/ignore/recursively      -    -    -     -           -
 r     /empty/dir/to/remove                     -    -    -     -           -
 R     /dir/to/remove/recursively               -    -    -     -           -
 z     /path-or-glob/to/adjust/mode             mode user group -           MAC context
-Z     /path-or-glob/to/adjust/mode/recursively mode user group -           MAC context
+z+    /path-or-glob/to/adjust/mode/recursively mode user group -           MAC context
 t     /path-or-glob/to/set/xattrs              -    -    -     -           xattrs
 t+    /path-or-glob/to/set/xattrs/recursively  -    -    -     -           xattrs
 h     /path-or-glob/to/set/attrs               -    -    -     -           file attrs
@@ -362,17 +362,12 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
 
         <varlistentry>
           <term><varname>z</varname></term>
+          <term><varname>z+</varname></term>
           <listitem><para>Adjust the access mode, user and group ownership, and restore the SELinux security
-          context of a file or directory, if it exists. Lines of this type accept shell-style globs in place
-          of normal path names. Does not follow symlinks.</para></listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><varname>Z</varname></term>
-          <listitem><para>Recursively set the access mode, user and group ownership, and restore the SELinux
-          security context of a file or directory if it exists, as well as of its subdirectories and the
-          files contained therein (if applicable). Lines of this type accept shell-style globs in place of
-          normal path names. Does not follow symlinks.</para></listitem>
+          context of a file or directory, if it exists. <varname>z+</varname> is the same as
+          <varname>z</varname> but will be applied recursively to subdirectories and files contained therein
+          (if applicable) when the provided path is a directory. Lines of this type accept shell-style globs
+          in place of normal path names. Does not follow symlinks.</para></listitem>
         </varlistentry>
 
         <varlistentry>
@@ -490,7 +485,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       <para>The file access mode to use when creating this file or
       directory. If omitted or when set to <literal>-</literal>, the
       default is used: 0755 for directories, 0644 for all other file
-      objects.  For <varname>z</varname>, <varname>Z</varname> lines,
+      objects. For <varname>z</varname>, <varname>z+</varname> lines,
       if omitted or when set to <literal>-</literal>, the file access
       mode will not be modified. This parameter is ignored for
       <varname>x</varname>, <varname>r</varname>,
@@ -507,7 +502,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       removed from the new access mode too. In addition, the
       sticky/SUID/SGID bit is removed unless applied to a
       directory. This functionality is particularly useful in
-      conjunction with <varname>Z</varname>.</para>
+      conjunction with <varname>z+</varname>.</para>
     </refsect2>
 
     <refsect2>
@@ -515,7 +510,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
 
       <para>The user and group to use for this file or directory. This may either be a numeric ID or a
       user/group name. If omitted or when set to <literal>-</literal>, the user and group of the user who
-      invokes <command>systemd-tmpfiles</command> is used. For <varname>z</varname> and <varname>Z</varname>
+      invokes <command>systemd-tmpfiles</command> is used. For <varname>z</varname> and <varname>z+</varname>
       lines, when omitted or when set to <literal>-</literal>, the file ownership will not be modified. These
       parameters are ignored for <varname>x</varname>, <varname>r</varname>, <varname>R</varname>,
       <varname>L</varname>, <varname>t</varname>, <varname>t+</varname>, and <varname>a</varname> lines.</para>
