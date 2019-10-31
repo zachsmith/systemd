@@ -93,7 +93,7 @@ typedef enum ItemType {
         WRITE_FILE = 'w',
         EMPTY_DIRECTORY = 'e',
         SET_XATTR = 't',
-        RECURSIVE_SET_XATTR = 'T',
+        RECURSIVE_SET_XATTR = 'T', /* deprecated: use t+ */
         SET_ACL = 'a',
         RECURSIVE_SET_ACL = 'A',
         SET_ATTRIBUTE = 'h',
@@ -2074,13 +2074,12 @@ static int create_item(Item *i) {
                 break;
 
         case SET_XATTR:
-                r = glob_item(i, path_set_xattrs);
-                if (r < 0)
-                        return r;
-                break;
-
         case RECURSIVE_SET_XATTR:
-                r = glob_item_recursively(i, fd_set_xattrs);
+                if ((i->type == SET_XATTR && i->append_or_force) || i->type == RECURSIVE_SET_XATTR)
+                        r = glob_item_recursively(i, fd_set_xattrs);
+                else
+                        r = glob_item(i, path_set_xattrs);
+
                 if (r < 0)
                         return r;
                 break;

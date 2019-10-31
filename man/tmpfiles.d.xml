@@ -60,7 +60,7 @@ R     /dir/to/remove/recursively               -    -    -     -           -
 z     /path-or-glob/to/adjust/mode             mode user group -           MAC context
 Z     /path-or-glob/to/adjust/mode/recursively mode user group -           MAC context
 t     /path-or-glob/to/set/xattrs              -    -    -     -           xattrs
-T     /path-or-glob/to/set/xattrs/recursively  -    -    -     -           xattrs
+t+    /path-or-glob/to/set/xattrs/recursively  -    -    -     -           xattrs
 h     /path-or-glob/to/set/attrs               -    -    -     -           file attrs
 h+    /path-or-glob/to/set/attrs/recursively   -    -    -     -           file attrs
 a     /path-or-glob/to/set/acls                -    -    -     -           POSIX ACLs
@@ -377,6 +377,7 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
 
         <varlistentry>
           <term><varname>t</varname></term>
+          <term><varname>t+</varname></term>
           <listitem><para>Set extended attributes, see <citerefentry
           project='man-pages'><refentrytitle>attr</refentrytitle>
           <manvolnum>5</manvolnum></citerefentry> for details. The argument field should take one or more
@@ -384,15 +385,11 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
           <replaceable>namespace</replaceable>.<replaceable>attribute</replaceable>=<replaceable>value</replaceable>,
           for examples see below. Lines of this type accept shell-style globs in place of normal path
           names. This can be useful for setting SMACK labels. Does not follow symlinks.</para>
+          <para><varname>t+</varname> is the same as <varname>t</varname>, but operates recursively.</para>
 
           <para>Please note that extended attributes settable with this line type are a different concept
           from the Linux file attributes settable with <varname>h</varname>/<varname>H</varname>, see
           below.</para></listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><varname>T</varname></term>
-          <listitem><para>Same as <varname>t</varname>, but operates recursively.</para></listitem>
         </varlistentry>
 
         <varlistentry>
@@ -416,7 +413,7 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
           follow symlinks.</para>
 
           <para>Please note that the Linux file attributes settable with this line type are a different
-          concept from the extended attributes settable with <varname>t</varname>/<varname>T</varname>,
+          concept from the extended attributes settable with <varname>t</varname>/<varname>t+</varname>,
           see above.</para>
           </listitem>
         </varlistentry>
@@ -498,7 +495,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       mode will not be modified. This parameter is ignored for
       <varname>x</varname>, <varname>r</varname>,
       <varname>R</varname>, <varname>L</varname>, <varname>t</varname>,
-      and <varname>a</varname> lines.</para>
+      <varname>t+</varname> and <varname>a</varname> lines.</para>
 
       <para>Optionally, if prefixed with <literal>~</literal>, the
       access mode is masked based on the already set access bits for
@@ -521,7 +518,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       invokes <command>systemd-tmpfiles</command> is used. For <varname>z</varname> and <varname>Z</varname>
       lines, when omitted or when set to <literal>-</literal>, the file ownership will not be modified. These
       parameters are ignored for <varname>x</varname>, <varname>r</varname>, <varname>R</varname>,
-      <varname>L</varname>, <varname>t</varname>, and <varname>a</varname> lines.</para>
+      <varname>L</varname>, <varname>t</varname>, <varname>t+</varname>, and <varname>a</varname> lines.</para>
 
       <para>This field should generally only reference system users/groups, i.e. users/groups that are
       guaranteed to be resolvable during early boot. If this field references users/groups that only become
@@ -595,7 +592,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       separated by <literal>:</literal>, e.g.  <literal>1:3</literal>. For <varname>f</varname>, <varname>F</varname>,
       and <varname>w</varname>, the argument may be used to specify a short string that is written to the file,
       suffixed by a newline. For <varname>C</varname>, specifies the source file or directory. For <varname>t</varname>
-      and <varname>T</varname>, determines extended attributes to be set. For <varname>a</varname> and
+      and <varname>t+</varname>, determines extended attributes to be set. For <varname>a</varname> and
       <varname>A</varname>, determines ACL attributes to be set. For <varname>h</varname> and <varname>H</varname>,
       determines the file attributes to set. Ignored for all other lines.</para>
 
