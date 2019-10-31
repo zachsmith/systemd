@@ -325,7 +325,7 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
           <listitem><para>Ignore a path during cleaning. Use this type
           to exclude paths from clean-up as controlled with the Age
           parameter. Note that lines of this type do not influence the
-          effect of <varname>r</varname> or <varname>R</varname>
+          effect of <varname>r</varname> or <varname>r+</varname>
           lines. Lines of this type accept shell-style globs in place
           of normal path names.  </para></listitem>
         </varlistentry>
@@ -338,25 +338,18 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
           not exclude the content if path is a directory, but only
           directory itself. Note that lines of this type do not
           influence the effect of <varname>r</varname> or
-          <varname>R</varname> lines. Lines of this type accept
+          <varname>r+</varname> lines. Lines of this type accept
           shell-style globs in place of normal path names.
           </para></listitem>
         </varlistentry>
 
         <varlistentry>
           <term><varname>r</varname></term>
-          <listitem><para>Remove a file or directory if it exists.
-          This may not be used to remove non-empty directories, use
-          <varname>R</varname> for that.  Lines of this type accept
-          shell-style globs in place of normal path
-          names. Does not follow symlinks.</para></listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><varname>R</varname></term>
-          <listitem><para>Recursively remove a path and all its
-          subdirectories (if it is a directory). Lines of this type
-          accept shell-style globs in place of normal path
+          <term><varname>r+</varname></term>
+          <listitem><para><varname>r</varname> removes a file or non-empty
+          directory if it exists. <varname>r+</varname> recursively removes
+          a path and all of it subdirectories (if the provided path is a directory).
+          Lines of this type accept shell-style globs in place of normal path
           names. Does not follow symlinks.</para></listitem>
         </varlistentry>
 
@@ -489,7 +482,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       if omitted or when set to <literal>-</literal>, the file access
       mode will not be modified. This parameter is ignored for
       <varname>x</varname>, <varname>r</varname>,
-      <varname>R</varname>, <varname>L</varname>, <varname>t</varname>,
+      <varname>r+</varname>, <varname>L</varname>, <varname>t</varname>,
       <varname>t+</varname> and <varname>a</varname> lines.</para>
 
       <para>Optionally, if prefixed with <literal>~</literal>, the
@@ -512,7 +505,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       user/group name. If omitted or when set to <literal>-</literal>, the user and group of the user who
       invokes <command>systemd-tmpfiles</command> is used. For <varname>z</varname> and <varname>z+</varname>
       lines, when omitted or when set to <literal>-</literal>, the file ownership will not be modified. These
-      parameters are ignored for <varname>x</varname>, <varname>r</varname>, <varname>R</varname>,
+      parameters are ignored for <varname>x</varname>, <varname>r</varname>, <varname>r+</varname>,
       <varname>L</varname>, <varname>t</varname>, <varname>t+</varname>, and <varname>a</varname> lines.</para>
 
       <para>This field should generally only reference system users/groups, i.e. users/groups that are

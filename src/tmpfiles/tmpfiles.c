@@ -101,7 +101,7 @@ typedef enum ItemType {
         IGNORE_PATH = 'x',
         IGNORE_DIRECTORY_PATH = 'X',
         REMOVE_PATH = 'r',
-        RECURSIVE_REMOVE_PATH = 'R',
+        RECURSIVE_REMOVE_PATH = 'R', /* deprecated: use r+ */
         RELABEL_PATH = 'z',
         RECURSIVE_RELABEL_PATH = 'Z', /* deprecated: use z+ */
         ADJUST_MODE = 'm', /* legacy, 'z' is identical to this */
@@ -2118,17 +2118,17 @@ static int remove_item_instance(Item *i, const char *instance) {
         switch (i->type) {
 
         case REMOVE_PATH:
-                if (remove(instance) < 0 && errno != ENOENT)
-                        return log_error_errno(errno, "rm(%s): %m", instance);
-
-                break;
-
         case RECURSIVE_REMOVE_PATH:
-                /* FIXME: we probably should use dir_cleanup() here instead of rm_rf() so that 'x' is honoured. */
-                log_debug("rm -rf \"%s\"", instance);
-                r = rm_rf(instance, REMOVE_ROOT|REMOVE_SUBVOLUME|REMOVE_PHYSICAL);
-                if (r < 0 && r != -ENOENT)
-                        return log_error_errno(r, "rm_rf(%s): %m", instance);
+                if ((i->type == REMOVE_PATH && i->append_or_force) || i->type == RECURSIVE_REMOVE_PATH) {
+                        /* FIXME: we probably should use dir_cleanup() here instead of rm_rf() so that 'x' is honoured. */
+                        log_debug("rm -rf \"%s\"", instance);
+                        r = rm_rf(instance, REMOVE_ROOT|REMOVE_SUBVOLUME|REMOVE_PHYSICAL);
+                        if (r < 0 && r != -ENOENT)
+                                return log_error_errno(r, "rm_rf(%s): %m", instance);
+                } else {
+                        if (remove(instance) < 0 && errno != ENOENT)
+                                return log_error_errno(errno, "rm(%s): %m", instance);
+                }
 
                 break;
 
