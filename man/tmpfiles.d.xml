@@ -54,7 +54,7 @@ b     /dev/block-device-to-create              mode user group -           -
 # p+, L+, c+, b+ create target unconditionally, w+ appends to the file
 C     /target/to/create                        -    -    -     -           /source/to/copy
 x     /path-or-glob/to/ignore                  -    -    -     -           -
-X     /path-or-glob/to/ignore/recursively      -    -    -     -           -
+x+    /path-or-glob/to/ignore/recursively      -    -    -     -           -
 r     /empty/dir/to/remove                     -    -    -     -           -
 R     /dir/to/remove/recursively               -    -    -     -           -
 z     /path-or-glob/to/adjust/mode             mode user group -           MAC context
@@ -322,25 +322,15 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
 
         <varlistentry>
           <term><varname>x</varname></term>
+          <term><varname>x+</varname></term>
           <listitem><para>Ignore a path during cleaning. Use this type
           to exclude paths from clean-up as controlled with the Age
-          parameter. Note that lines of this type do not influence the
-          effect of <varname>r</varname> or <varname>r+</varname>
+          parameter. Unlike <varname>x</varname>, <varname>x+</varname>
+          will not exclude the content if path is a directory, but only
+          directory itself. Note that lines of this type do not influence
+          the effect of <varname>r</varname> or <varname>r+</varname>
           lines. Lines of this type accept shell-style globs in place
           of normal path names.  </para></listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><varname>X</varname></term>
-          <listitem><para>Ignore a path during cleaning. Use this type
-          to exclude paths from clean-up as controlled with the Age
-          parameter. Unlike <varname>x</varname>, this parameter will
-          not exclude the content if path is a directory, but only
-          directory itself. Note that lines of this type do not
-          influence the effect of <varname>r</varname> or
-          <varname>r+</varname> lines. Lines of this type accept
-          shell-style globs in place of normal path names.
-          </para></listitem>
         </varlistentry>
 
         <varlistentry>
@@ -548,7 +538,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       <varname>d</varname>, <varname>D</varname>, <varname>e</varname>,
       <varname>v</varname>, <varname>q</varname>,
       <varname>Q</varname>, <varname>C</varname>, <varname>x</varname>
-      and <varname>X</varname>. If omitted or set to
+      and <varname>x+</varname>. If omitted or set to
       <literal>-</literal>, no automatic clean-up is done.</para>
 
       <para>If the age field starts with a tilde character

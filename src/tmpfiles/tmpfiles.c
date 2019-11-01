@@ -99,7 +99,7 @@ typedef enum ItemType {
         SET_ATTRIBUTE = 'h',
         RECURSIVE_SET_ATTRIBUTE = 'H', /* deprecated: use h+ */
         IGNORE_PATH = 'x',
-        IGNORE_DIRECTORY_PATH = 'X',
+        IGNORE_DIRECTORY_PATH = 'X', /* deprecated: use x+ */
         REMOVE_PATH = 'r',
         RECURSIVE_REMOVE_PATH = 'R', /* deprecated: use r+ */
         RELABEL_PATH = 'z',
@@ -2226,13 +2226,19 @@ static int clean_item(Item *i) {
         case CREATE_SUBVOLUME_INHERIT_QUOTA:
         case CREATE_SUBVOLUME_NEW_QUOTA:
         case TRUNCATE_DIRECTORY:
-        case IGNORE_PATH:
         case COPY_FILES:
                 clean_item_instance(i, i->path);
                 return 0;
         case EMPTY_DIRECTORY:
-        case IGNORE_DIRECTORY_PATH:
                 return glob_item(i, clean_item_instance);
+        case IGNORE_PATH:
+        case IGNORE_DIRECTORY_PATH:
+                if ((i->type == IGNORE_PATH && i->append_or_force) || i->type == IGNORE_DIRECTORY_PATH)
+                        return glob_item(i, clean_item_instance);
+                else {
+                        clean_item_instance(i, i->path);
+                        return 0;
+                }
         default:
                 return 0;
         }
