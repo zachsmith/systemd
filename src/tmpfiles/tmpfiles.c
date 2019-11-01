@@ -79,7 +79,7 @@ typedef enum ItemType {
         CREATE_FILE = 'f',
         TRUNCATE_FILE = 'F', /* deprecated: use f+ */
         CREATE_DIRECTORY = 'd',
-        TRUNCATE_DIRECTORY = 'D',
+        TRUNCATE_DIRECTORY = 'D', /* deprecated: use d+ */
         CREATE_SUBVOLUME = 'v',
         CREATE_SUBVOLUME_WITH_QUOTA = 'q',
         CREATE_SUBVOLUME_NEW_QUOTA = 'Q', /* deprecated: use q+ */
@@ -2151,7 +2151,11 @@ static int remove_item(Item *i) {
 
         switch (i->type) {
 
+        case CREATE_DIRECTORY:
         case TRUNCATE_DIRECTORY:
+                if (i->type == CREATE_DIRECTORY && !i->append_or_force)
+                        return 0;
+
                 /* FIXME: we probably should use dir_cleanup() here instead of rm_rf() so that 'x' is honoured. */
                 log_debug("rm -rf \"%s\"", i->path);
                 r = rm_rf(i->path, REMOVE_PHYSICAL);
