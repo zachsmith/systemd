@@ -81,8 +81,8 @@ typedef enum ItemType {
         CREATE_DIRECTORY = 'd',
         TRUNCATE_DIRECTORY = 'D',
         CREATE_SUBVOLUME = 'v',
-        CREATE_SUBVOLUME_INHERIT_QUOTA = 'q',
-        CREATE_SUBVOLUME_NEW_QUOTA = 'Q',
+        CREATE_SUBVOLUME_WITH_QUOTA = 'q',
+        CREATE_SUBVOLUME_NEW_QUOTA = 'Q', /* deprecated: use q+ */
         CREATE_FIFO = 'p',
         CREATE_SYMLINK = 'L',
         CREATE_CHAR_DEVICE = 'c',
@@ -350,7 +350,7 @@ static bool takes_ownership(ItemType t) {
                       EMPTY_DIRECTORY,
                       TRUNCATE_DIRECTORY,
                       CREATE_SUBVOLUME,
-                      CREATE_SUBVOLUME_INHERIT_QUOTA,
+                      CREATE_SUBVOLUME_WITH_QUOTA,
                       CREATE_SUBVOLUME_NEW_QUOTA,
                       CREATE_FIFO,
                       CREATE_SYMLINK,
@@ -1602,7 +1602,7 @@ static int create_subvolume(Item *i, const char *path) {
         int r, q = 0;
 
         assert(i);
-        assert(IN_SET(i->type, CREATE_SUBVOLUME, CREATE_SUBVOLUME_NEW_QUOTA, CREATE_SUBVOLUME_INHERIT_QUOTA));
+        assert(IN_SET(i->type, CREATE_SUBVOLUME, CREATE_SUBVOLUME_NEW_QUOTA, CREATE_SUBVOLUME_WITH_QUOTA));
 
         fd = create_directory_or_subvolume(path, i->mode, true, &creation);
         if (fd == -EEXIST)
@@ -1611,8 +1611,11 @@ static int create_subvolume(Item *i, const char *path) {
                 return fd;
 
         if (creation == CREATION_NORMAL &&
-            IN_SET(i->type, CREATE_SUBVOLUME_NEW_QUOTA, CREATE_SUBVOLUME_INHERIT_QUOTA)) {
-                r = btrfs_subvol_auto_qgroup_fd(fd, 0, i->type == CREATE_SUBVOLUME_NEW_QUOTA);
+            IN_SET(i->type, CREATE_SUBVOLUME_WITH_QUOTA, CREATE_SUBVOLUME_NEW_QUOTA)) {
+                bool new_quota_group = (i->type == CREATE_SUBVOLUME_WITH_QUOTA && i->append_or_force) ||
+                        i->type == CREATE_SUBVOLUME_NEW_QUOTA;
+
+                r = btrfs_subvol_auto_qgroup_fd(fd, 0, new_quota_group);
                 if (r == -ENOTTY)
                         log_debug_errno(r, "Couldn't adjust quota for subvolume \"%s\" (unsupported fs or dir not a subvolume): %m", i->path);
                 else if (r == -EROFS)
@@ -1968,7 +1971,7 @@ static int create_item(Item *i) {
                 break;
 
         case CREATE_SUBVOLUME:
-        case CREATE_SUBVOLUME_INHERIT_QUOTA:
+        case CREATE_SUBVOLUME_WITH_QUOTA:
         case CREATE_SUBVOLUME_NEW_QUOTA:
                 RUN_WITH_UMASK(0000)
                         (void) mkdir_parents_label(i->path, 0755);
@@ -2223,7 +2226,7 @@ static int clean_item(Item *i) {
         switch (i->type) {
         case CREATE_DIRECTORY:
         case CREATE_SUBVOLUME:
-        case CREATE_SUBVOLUME_INHERIT_QUOTA:
+        case CREATE_SUBVOLUME_WITH_QUOTA:
         case CREATE_SUBVOLUME_NEW_QUOTA:
         case TRUNCATE_DIRECTORY:
         case COPY_FILES:
@@ -2575,7 +2578,7 @@ static int parse_line(const char *fname, unsigned line, const char *buffer, bool
 
         case CREATE_DIRECTORY:
         case CREATE_SUBVOLUME:
-        case CREATE_SUBVOLUME_INHERIT_QUOTA:
+        case CREATE_SUBVOLUME_WITH_QUOTA:
         case CREATE_SUBVOLUME_NEW_QUOTA:
         case EMPTY_DIRECTORY:
         case TRUNCATE_DIRECTORY:
@@ -2769,7 +2772,7 @@ static int parse_line(const char *fname, unsigned line, const char *buffer, bool
                 i.mode = m;
                 i.mode_set = true;
         } else
-                i.mode = IN_SET(i.type, CREATE_DIRECTORY, TRUNCATE_DIRECTORY, CREATE_SUBVOLUME, CREATE_SUBVOLUME_INHERIT_QUOTA, CREATE_SUBVOLUME_NEW_QUOTA) ? 0755 : 0644;
+                i.mode = IN_SET(i.type, CREATE_DIRECTORY, TRUNCATE_DIRECTORY, CREATE_SUBVOLUME, CREATE_SUBVOLUME_WITH_QUOTA, CREATE_SUBVOLUME_NEW_QUOTA) ? 0755 : 0644;
 
         if (!empty_or_dash(age)) {
                 const char *a = age;
@@ -3057,7 +3060,7 @@ static int read_config_file(char **config_dirs, const char *fn, bool ignore_enoe
                         continue;
 
                 ORDERED_HASHMAP_FOREACH(j, items, iter) {
-                        if (!IN_SET(j->type, CREATE_DIRECTORY, TRUNCATE_DIRECTORY, CREATE_SUBVOLUME, CREATE_SUBVOLUME_INHERIT_QUOTA, CREATE_SUBVOLUME_NEW_QUOTA))
+                        if (!IN_SET(j->type, CREATE_DIRECTORY, TRUNCATE_DIRECTORY, CREATE_SUBVOLUME, CREATE_SUBVOLUME_WITH_QUOTA, CREATE_SUBVOLUME_NEW_QUOTA))
                                 continue;
 
                         if (path_equal(j->path, i->path)) {

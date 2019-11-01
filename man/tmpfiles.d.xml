@@ -46,7 +46,8 @@ D     /directory/to/create-and-remove          mode user group cleanup-age -
 e     /directory/to/cleanup                    mode user group cleanup-age -
 v     /subvolume/to/create                     mode user group -           -
 v     /subvolume-or-directory/to/create        mode user group -           -
-Q     /subvolume/to/create                     mode user group -           -
+q     /subvolume/to/create                     mode user group -           -
+q+    /subvolume/to/create-new-quota-group     mode user group -           -
 p     /fifo/to/create                          mode user group -           -
 L     /symlink/to/create                       -    -    -     -           symlink/target/path
 c     /dev/char-device-to-create               mode user group -           -
@@ -208,7 +209,7 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
           the same way as <varname>d</varname>.</para>
 
           <para>A subvolume created with this line type is not assigned to any higher-level quota group. For
-          that, use <varname>q</varname> or <varname>Q</varname>, which allow creating simple quota group
+          that, use <varname>q</varname> or <varname>q+</varname>, which allow creating simple quota group
           hierarchies, see below.</para></listitem>
         </varlistentry>
 
@@ -220,13 +221,13 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
           non-btrfs file systems, this line type is identical to <varname>d</varname>.</para>
 
           <para>If the subvolume already exists, no change to the quota hierarchy is made, regardless of whether the
-          subvolume is already attached to a quota group or not. Also see <varname>Q</varname> below. See <citerefentry
+          subvolume is already attached to a quota group or not. Also see <varname>q+</varname> below. See <citerefentry
           project='die-net'><refentrytitle>btrfs-qgroup</refentrytitle><manvolnum>8</manvolnum></citerefentry> for
           details about the btrfs quota group concept.</para></listitem>
         </varlistentry>
 
         <varlistentry>
-          <term><varname>Q</varname></term>
+          <term><varname>q+</varname></term>
           <listitem><para>Create the subvolume or directory the same as <varname>v</varname>, but assign the
           new subvolume to a new leaf quota group. Instead of copying the higher-level quota group
           assignments from the parent as is done with <varname>q</varname>, the lowest quota group of the
@@ -240,21 +241,21 @@ L     /tmp/foobar -    -    -     -   /dev/null</programlisting>
           <para>Effectively, this has a similar effect as <varname>q</varname>, however introduces a new higher-level
           quota group for the specified subvolume that may be used to enforce limits and accounting to the specified
           subvolume and children subvolume created within it. Thus, by creating subvolumes only via
-          <varname>q</varname> and <varname>Q</varname>, a concept of "subtree quotas" is implemented. Each subvolume
-          for which <varname>Q</varname> is set will get a "subtree" quota group created, and all child subvolumes
+          <varname>q</varname> and <varname>q+</varname>, a concept of "subtree quotas" is implemented. Each subvolume
+          for which <varname>q+</varname> is set will get a "subtree" quota group created, and all child subvolumes
           created within it will be assigned to it. Each subvolume for which <varname>q</varname> is set will not get
           such a "subtree" quota group, but it is ensured that they are added to the same "subtree" quota group as
           their immediate parents.</para>
 
-          <para>It is recommended to use <varname>Q</varname> for subvolumes that typically contain further subvolumes,
+          <para>It is recommended to use <varname>q+</varname> for subvolumes that typically contain further subvolumes,
           and where it is desirable to have accounting and quota limits on all child subvolumes together. Examples for
-          <varname>Q</varname> are typically <filename>/home</filename> or <filename>/var/lib/machines</filename>. In
+          <varname>q+</varname> are typically <filename>/home</filename> or <filename>/var/lib/machines</filename>. In
           contrast, <varname>q</varname> should be used for subvolumes that either usually do not include further
           subvolumes or where no accounting and quota limits are needed that apply to all child subvolumes
           together. Examples for <varname>q</varname> are typically <filename>/var</filename> or
           <filename>/var/tmp</filename>. </para>
 
-          <para>As with <varname>q</varname>, <varname>Q</varname> has no effect on the quota group hierarchy if the
+          <para>As with <varname>q</varname>, <varname>q+</varname> has no effect on the quota group hierarchy if the
           subvolume already exists, regardless of whether the subvolume already belong to a quota group or not.
           </para></listitem>
         </varlistentry>
@@ -448,7 +449,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
 
       <para>Note that for all line types that result in creation of any kind of file node
       (i.e. <varname>f</varname>/<varname>F</varname>,
-      <varname>d</varname>/<varname>D</varname>/<varname>v</varname>/<varname>q</varname>/<varname>Q</varname>,
+      <varname>d</varname>/<varname>D</varname>/<varname>v</varname>/<varname>q</varname>/<varname>q+</varname>,
       <varname>p</varname>, <varname>L</varname>, <varname>c</varname>/<varname>b</varname> and <varname>C</varname>)
       leading directories are implicitly created if needed, owned by root with an access mode of 0755. In order to
       create them with different modes or ownership make sure to add appropriate <varname>d</varname> lines.</para>
@@ -537,7 +538,7 @@ w- /proc/sys/vm/swappiness - - - - 10</programlisting></para>
       <para>The age field only applies to lines starting with
       <varname>d</varname>, <varname>D</varname>, <varname>e</varname>,
       <varname>v</varname>, <varname>q</varname>,
-      <varname>Q</varname>, <varname>C</varname>, <varname>x</varname>
+      <varname>q+</varname>, <varname>C</varname>, <varname>x</varname>
       and <varname>x+</varname>. If omitted or set to
       <literal>-</literal>, no automatic clean-up is done.</para>
 
