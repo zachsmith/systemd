@@ -1463,6 +1463,19 @@ void manager_reset_server_features(Manager *m) {
         log_info("Resetting learnt feature levels on all servers.");
 }
 
+void manager_reset_dns_servers(Manager *m) {
+        assert(m);
+
+        /* make sure current_dns_server is set; may be unset if reset is called before it has been assigned */
+        if (!m->current_dns_server)
+                return;
+
+        if (m->current_dns_server->type == DNS_SERVER_FALLBACK)
+                manager_set_dns_server(m, m->fallback_dns_servers);
+        else
+                manager_set_dns_server(m, m->dns_servers);
+}
+
 void manager_cleanup_saved_user(Manager *m) {
         _cleanup_closedir_ DIR *d = NULL;
         struct dirent *de;

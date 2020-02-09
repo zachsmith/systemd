@@ -682,6 +682,18 @@ int bus_link_method_revert(sd_bus_message *message, void *userdata, sd_bus_error
         return sd_bus_reply_method_return(message, NULL);
 }
 
+static int bus_link_method_reset_dns_servers(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+        Link *l = userdata;
+
+        assert(message);
+        assert(l);
+
+        if (l->current_dns_server)
+                link_set_dns_server(l, l->dns_servers);
+
+        return sd_bus_reply_method_return(message, NULL);;
+}
+
 const sd_bus_vtable link_vtable[] = {
         SD_BUS_VTABLE_START(0),
 
@@ -706,6 +718,7 @@ const sd_bus_vtable link_vtable[] = {
         SD_BUS_METHOD("SetDNSSEC", "s", NULL, bus_link_method_set_dnssec, SD_BUS_VTABLE_UNPRIVILEGED),
         SD_BUS_METHOD("SetDNSSECNegativeTrustAnchors", "as", NULL, bus_link_method_set_dnssec_negative_trust_anchors, SD_BUS_VTABLE_UNPRIVILEGED),
         SD_BUS_METHOD("Revert", NULL, NULL, bus_link_method_revert, SD_BUS_VTABLE_UNPRIVILEGED),
+        SD_BUS_METHOD("ResetDNSServers", NULL, NULL, bus_link_method_reset_dns_servers, SD_BUS_VTABLE_UNPRIVILEGED),
 
         SD_BUS_VTABLE_END
 };

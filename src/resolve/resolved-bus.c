@@ -1835,6 +1835,17 @@ static int bus_method_unregister_service(sd_bus_message *message, void *userdata
         return call_dnssd_method(m, message, bus_dnssd_method_unregister, error);
 }
 
+static int bus_method_reset_dns_servers(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+        Manager *m = userdata;
+
+        assert(message);
+        assert(m);
+
+        manager_reset_dns_servers(m);
+
+        return sd_bus_reply_method_return(message, NULL);;
+}
+
 static const sd_bus_vtable resolve_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_PROPERTY("LLMNRHostname", "s", NULL, offsetof(Manager, llmnr_hostname), SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
@@ -1870,6 +1881,7 @@ static const sd_bus_vtable resolve_vtable[] = {
         SD_BUS_METHOD("SetLinkDNSSEC", "is", NULL, bus_method_set_link_dnssec, SD_BUS_VTABLE_UNPRIVILEGED),
         SD_BUS_METHOD("SetLinkDNSSECNegativeTrustAnchors", "ias", NULL, bus_method_set_link_dnssec_negative_trust_anchors, SD_BUS_VTABLE_UNPRIVILEGED),
         SD_BUS_METHOD("RevertLink", "i", NULL, bus_method_revert_link, SD_BUS_VTABLE_UNPRIVILEGED),
+        SD_BUS_METHOD("ResetDNSServers", NULL, NULL, bus_method_reset_dns_servers, SD_BUS_VTABLE_UNPRIVILEGED),
 
         SD_BUS_METHOD("RegisterService", "sssqqqaa{say}", "o", bus_method_register_service, SD_BUS_VTABLE_UNPRIVILEGED),
         SD_BUS_METHOD("UnregisterService", "o", NULL, bus_method_unregister_service, SD_BUS_VTABLE_UNPRIVILEGED),

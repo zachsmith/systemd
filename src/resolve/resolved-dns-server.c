@@ -746,10 +746,7 @@ void manager_next_dns_server(Manager *m) {
 
         /* If there was no next one, then start from the beginning of
          * the list */
-        if (m->current_dns_server->type == DNS_SERVER_FALLBACK)
-                manager_set_dns_server(m, m->fallback_dns_servers);
-        else
-                manager_set_dns_server(m, m->dns_servers);
+        manager_reset_dns_servers(m);
 }
 
 DnssecMode dns_server_get_dnssec_mode(DnsServer *s) {
