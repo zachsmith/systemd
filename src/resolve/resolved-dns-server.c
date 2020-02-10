@@ -729,6 +729,59 @@ DnsServer *manager_get_dns_server(Manager *m) {
         return m->current_dns_server;
 }
 
+static int on_reset_dns_servers_event_source(sd_event_source *s, usec_t u, void *userdata) {
+        Manager *m = userdata;
+
+        assert(m);
+
+        if (m->current_dns_server != m->dns_servers) {
+                manager_reset_dns_servers(m);
+                log_debug("CurrentDNSServer has been reset to first server in the DNS servers list");
+        }
+
+        return 0;
+}
+
+static void manager_set_dns_servers_reset_timer(Manager *m) {
+        int r;
+        uint64_t now, timer;
+        sd_event *event;
+
+        if (!(m->dns_servers_reset_usec > 0)) {
+                log_debug("DNS reset timer not started; must be > 0: DNSServersResetSec=%lu", m->dns_servers_reset_usec);
+                return;
+        }
+
+        event = sd_event_source_get_event(m->reset_dns_servers_event_source);
+
+        /* attempt to get time of previous event if one has been added */
+        if (event) {
+                r = sd_event_source_get_time(m->reset_dns_servers_event_source, &timer);
+                if (r < 0) {
+                        log_debug_errno(r, "Failed to check time on dns servers event source: %m");
+                        return;
+                }
+        }
+
+        r = sd_event_now(m->event, clock_boottime_or_monotonic(), &now);
+        if (r < 0) {
+                log_debug_errno(r, "Failed to get time for dns servers reset event loop: %m");
+                return;
+        }
+
+        /* add a dns server reset event if thers isn't one already scheduled */
+        if (!event || now > timer) {
+                r = sd_event_add_time(
+                                m->event,
+                                &m->reset_dns_servers_event_source,
+                                clock_boottime_or_monotonic(),
+                                now + m->dns_servers_reset_usec,
+                                0, on_reset_dns_servers_event_source, m);
+                if (r < 0)
+                        log_debug_errno(r, "Failed to add DNS server reset event: %m");
+        }
+}
+
 void manager_next_dns_server(Manager *m) {
         assert(m);
 
@@ -741,6 +794,9 @@ void manager_next_dns_server(Manager *m) {
          * list only if the server is still linked. */
         if (m->current_dns_server->linked && m->current_dns_server->servers_next) {
                 manager_set_dns_server(m, m->current_dns_server->servers_next);
+               if (m->dns_servers_reset_usec > 0)
+                        manager_set_dns_servers_reset_timer(m);
+
                 return;
         }
 

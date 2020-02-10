@@ -61,6 +61,8 @@ struct Manager {
         LIST_HEAD(DnsStream, dns_streams);
         unsigned n_dns_streams[_DNS_STREAM_TYPE_MAX];
 
+        sd_event_source *reset_dns_servers_event_source;
+
         /* Unicast dns */
         LIST_HEAD(DnsServer, dns_servers);
         LIST_HEAD(DnsServer, fallback_dns_servers);
@@ -137,6 +139,8 @@ struct Manager {
         sd_event_source *dns_stub_tcp_event_source;
 
         Hashmap *polkit_registry;
+
+        usec_t dns_servers_reset_usec;
 };
 
 /* Manager */

@@ -260,6 +260,21 @@
         sending query to DNS servers.</para></listitem>
       </varlistentry>
 
+      <varlistentry>
+        <term><varname>DNSServersResetSec</varname></term>
+        <listitem><para>Specifies the number of seconds to wait before attempting to reset the current
+        selected server to the first DNS server defined with <varname>DNS=</varname>. If a transaction
+        fails to resolve with the currently selected server, resolved will attempt to resolve the query using
+        each defined DNS server in turn until a successful response is received (or until all servers
+        fail). Subsequent queries will be dispatched to the server with the last successful response. Setting
+        <varname>DNSServersResetSec</varname> to a number of seconds greater than 0 instructs resolved to
+        set a timer that will reset the currently selected DNS server to the first one defined with
+        <varname>DNS=</varname> after a subsequent server has been selected. Note that setting this value
+        can result in degraded performance as long as defined DNS servers remain unresponsive. The default
+        value is 0 resulting in no scheduled reset. Setting with a value lower than 10s is not
+        recommended.</para></listitem>
+      </varlistentry>
+
     </variablelist>
   </refsect1>
 
